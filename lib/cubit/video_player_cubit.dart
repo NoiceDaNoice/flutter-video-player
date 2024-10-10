@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:bloc/bloc.dart';
 import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
@@ -6,29 +8,49 @@ class VideoPlayerCubit extends Cubit<VideoPlayerState> {
   final VideoPlayerController _controller;
 
   VideoPlayerCubit(this._controller) : super(VideoPlayerState.initial()) {
-    _controller.addListener(_onVideoUpdated);
-    _controller.initialize().then(
-          (_) => emit(
-            state.copyWith(isInitialized: true),
-          ),
-        );
+    initialize();
+  }
+
+  void initialize() async {
+    try {
+      emit(state.copyWith(
+        isInitialized: false,
+        isError: false,
+      ));
+      await _controller.initialize();
+      _controller.addListener(_onVideoUpdated);
+      emit(state.copyWith(
+        isInitialized: true,
+      ));
+    } catch (e) {
+      print(e.toString());
+      emit(state.copyWith(isError: true, isInitialized: false));
+    }
   }
 
   void _onVideoUpdated() {
-    if (_controller.value.position >= _controller.value.duration) {
-      emit(state.copyWith(isPlaying: false, showRestartButton: true));
-    } else if (_controller.value.isPlaying && state.showRestartButton) {
-      emit(state.copyWith(showRestartButton: false));
+    try {
+      if (_controller.value.position >= _controller.value.duration) {
+        emit(state.copyWith(isPlaying: false, showRestartButton: true));
+      } else if (_controller.value.isPlaying && state.showRestartButton) {
+        emit(state.copyWith(showRestartButton: false));
+      }
+    } catch (e) {
+      emit(state.copyWith(isError: true, isInitialized: false));
     }
   }
 
   void togglePlayPause() {
-    if (_controller.value.isPlaying) {
-      _controller.pause();
-      emit(state.copyWith(isPlaying: false));
-    } else {
-      _controller.play();
-      emit(state.copyWith(isPlaying: true));
+    try {
+      if (_controller.value.isPlaying) {
+        _controller.pause();
+        emit(state.copyWith(isPlaying: false));
+      } else {
+        _controller.play();
+        emit(state.copyWith(isPlaying: true));
+      }
+    } catch (e) {
+      emit(state.copyWith(isError: true, isInitialized: false));
     }
   }
 
@@ -43,13 +65,12 @@ class VideoPlayerCubit extends Cubit<VideoPlayerState> {
   }
 
   void restart() {
-    emit(state.copyWith(
-      isPlaying: true,
-      showRestartButton: false,
-    ));
-
     _controller.seekTo(Duration.zero).then((_) {
       _controller.play();
+      emit(state.copyWith(
+        isPlaying: true,
+        showRestartButton: false,
+      ));
     });
   }
 
@@ -58,17 +79,15 @@ class VideoPlayerCubit extends Cubit<VideoPlayerState> {
   }
 
   void toggleFullscreen() {
-    emit(state.copyWith(isFullcreen: !state.isFullscreen));
-
     if (state.isFullscreen) {
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
-          overlays: SystemUiOverlay.values);
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
       SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     } else {
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
       SystemChrome.setPreferredOrientations(
           [DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]);
     }
+    emit(state.copyWith(isFullscreen: !state.isFullscreen));
   }
 
   @override
@@ -84,7 +103,8 @@ class VideoPlayerState {
   final bool showControls;
   final bool showRestartButton;
   final bool isInitialized;
-  final bool isFullscreen; 
+  final bool isFullscreen;
+  final bool isError;
 
   VideoPlayerState({
     required this.isPlaying,
@@ -92,6 +112,7 @@ class VideoPlayerState {
     required this.showRestartButton,
     required this.isInitialized,
     required this.isFullscreen,
+    required this.isError,
   });
 
   factory VideoPlayerState.initial() {
@@ -101,6 +122,7 @@ class VideoPlayerState {
       showRestartButton: false,
       isInitialized: false,
       isFullscreen: false,
+      isError: false,
     );
   }
 
@@ -109,14 +131,16 @@ class VideoPlayerState {
     bool? showControls,
     bool? showRestartButton,
     bool? isInitialized,
-    bool? isFullcreen,
+    bool? isFullscreen,
+    bool? isError,
   }) {
     return VideoPlayerState(
       isPlaying: isPlaying ?? this.isPlaying,
       showControls: showControls ?? this.showControls,
       showRestartButton: showRestartButton ?? this.showRestartButton,
       isInitialized: isInitialized ?? this.isInitialized,
-      isFullscreen: isFullcreen ?? this.isFullscreen,
+      isFullscreen: isFullscreen ?? this.isFullscreen,
+      isError: isError ?? this.isError,
     );
   }
 }

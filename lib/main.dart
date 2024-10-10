@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_video_player/video_player_widget.dart';
+import 'package:flutter_video_player/home.dart';
 
 void main() {
   runApp(const MainApp());
@@ -11,10 +11,7 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      home: VideoPlayerWidget(
-        videoUrl:
-            'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
-      ),
+      home: Home(),
     );
   }
 }
