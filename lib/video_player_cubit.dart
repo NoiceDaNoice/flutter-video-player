@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoPlayerCubit extends Cubit<VideoPlayerState> {
@@ -56,6 +57,20 @@ class VideoPlayerCubit extends Cubit<VideoPlayerState> {
     emit(state.copyWith(showControls: !state.showControls));
   }
 
+  void toggleFullscreen() {
+    emit(state.copyWith(isFullcreen: !state.isFullscreen));
+
+    if (state.isFullscreen) {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+          overlays: SystemUiOverlay.values);
+      SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    } else {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
+      SystemChrome.setPreferredOrientations(
+          [DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]);
+    }
+  }
+
   @override
   Future<void> close() {
     _controller.removeListener(_onVideoUpdated);
@@ -69,12 +84,14 @@ class VideoPlayerState {
   final bool showControls;
   final bool showRestartButton;
   final bool isInitialized;
+  final bool isFullscreen; 
 
   VideoPlayerState({
     required this.isPlaying,
     required this.showControls,
     required this.showRestartButton,
     required this.isInitialized,
+    required this.isFullscreen,
   });
 
   factory VideoPlayerState.initial() {
@@ -83,6 +100,7 @@ class VideoPlayerState {
       showControls: true,
       showRestartButton: false,
       isInitialized: false,
+      isFullscreen: false,
     );
   }
 
@@ -91,12 +109,14 @@ class VideoPlayerState {
     bool? showControls,
     bool? showRestartButton,
     bool? isInitialized,
+    bool? isFullcreen,
   }) {
     return VideoPlayerState(
       isPlaying: isPlaying ?? this.isPlaying,
       showControls: showControls ?? this.showControls,
       showRestartButton: showRestartButton ?? this.showRestartButton,
       isInitialized: isInitialized ?? this.isInitialized,
+      isFullscreen: isFullcreen ?? this.isFullscreen,
     );
   }
 }
