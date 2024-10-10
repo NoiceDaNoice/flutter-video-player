@@ -48,9 +48,11 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    AspectRatio(
-                      aspectRatio: _controller.value.aspectRatio,
-                      child: VideoPlayer(_controller),
+                    Center(
+                      child: AspectRatio(
+                        aspectRatio: _controller.value.aspectRatio,
+                        child: VideoPlayer(_controller),
+                      ),
                     ),
                     BlocBuilder<VideoPlayerCubit, VideoPlayerState>(
                       builder: (context, state) {

@@ -6,14 +6,18 @@ class VideoPlayerCubit extends Cubit<VideoPlayerState> {
 
   VideoPlayerCubit(this._controller) : super(VideoPlayerState.initial()) {
     _controller.addListener(_onVideoUpdated);
-    _controller
-        .initialize()
-        .then((_) => emit(state.copyWith(isInitialized: true)));
+    _controller.initialize().then(
+          (_) => emit(
+            state.copyWith(isInitialized: true),
+          ),
+        );
   }
 
   void _onVideoUpdated() {
-    if (_controller.value.position == _controller.value.duration) {
+    if (_controller.value.position >= _controller.value.duration) {
       emit(state.copyWith(isPlaying: false, showRestartButton: true));
+    } else if (_controller.value.isPlaying && state.showRestartButton) {
+      emit(state.copyWith(showRestartButton: false));
     }
   }
 
@@ -23,7 +27,7 @@ class VideoPlayerCubit extends Cubit<VideoPlayerState> {
       emit(state.copyWith(isPlaying: false));
     } else {
       _controller.play();
-      emit(state.copyWith(isPlaying: true, showRestartButton: false));
+      emit(state.copyWith(isPlaying: true));
     }
   }
 
@@ -38,14 +42,14 @@ class VideoPlayerCubit extends Cubit<VideoPlayerState> {
   }
 
   void restart() {
-    _controller.seekTo(Duration.zero);
     emit(state.copyWith(
       isPlaying: true,
       showRestartButton: false,
     ));
-    // Future.delayed(Duration.zero, () {
-    //   _controller.play();
-    // });
+
+    _controller.seekTo(Duration.zero).then((_) {
+      _controller.play();
+    });
   }
 
   void toggleControls() {
