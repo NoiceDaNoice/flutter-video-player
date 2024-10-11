@@ -10,7 +10,7 @@ class ResponseModel extends Equatable {
   final int? resultCount;
   final List<Result>? results;
 
-  ResponseModel({
+  const ResponseModel({
     this.resultCount,
     this.results,
   });
@@ -63,7 +63,7 @@ class Result extends Equatable {
   final String? currency;
   final String? primaryGenreName;
 
-  Result({
+  const Result({
     this.wrapperType,
     this.kind,
     this.artistId,

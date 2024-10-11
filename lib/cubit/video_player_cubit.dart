@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:bloc/bloc.dart';
 import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
@@ -23,7 +21,6 @@ class VideoPlayerCubit extends Cubit<VideoPlayerState> {
         isInitialized: true,
       ));
     } catch (e) {
-      print(e.toString());
       emit(state.copyWith(isError: true, isInitialized: false));
     }
   }
@@ -65,13 +62,22 @@ class VideoPlayerCubit extends Cubit<VideoPlayerState> {
   }
 
   void restart() {
-    _controller.seekTo(Duration.zero).then((_) {
-      _controller.play();
+    try {
+      initialize();
+      _controller.play().then((_) {
+        emit(state.copyWith(
+          isPlaying: true,
+          showRestartButton: false,
+        ));
+      });
+    } catch (e) {
       emit(state.copyWith(
-        isPlaying: true,
+        isError: true,
+        isInitialized: false,
+        isPlaying: false,
         showRestartButton: false,
       ));
-    });
+    }
   }
 
   void toggleControls() {

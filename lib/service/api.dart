@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_video_player/video_model.dart';
+import 'package:flutter_video_player/model/video_model.dart';
 
 class Api {
   final Dio _dio = Dio();
